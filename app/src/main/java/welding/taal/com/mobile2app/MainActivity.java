@@ -29,24 +29,60 @@ public class MainActivity extends AppCompatActivity {
         but  = (Button) findViewById(R.id.but);
         but1 = (Button) findViewById(R.id.textView1);
 
+
+
+
         mTaskService = RetrofitSingleton.getRestAdapter().create(TaskService.class);
         but1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTaskService.getTaskList1(new Callback<String>() {
-                    @Override
-                    public void success(String s, Response response) {
-                        System.out.println("Inside " + s.toString());
-                        text.setText(s.toString());
-                    }
+            mTaskService.getTaskList1(new Callback<String>() {
+                @Override
+                public void success(String s, Response response) {
+                    System.out.println("Inside " + s.toString());
+                    text.setText(s.toString());
+                }
 
-                    @Override
-                    public void failure(RetrofitError error) {
+                @Override
+                public void failure(RetrofitError error) {
 
-                    }
-                });
+                }
+            });
             }
         });
+        Thread t = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mTaskService.getTaskList1(new Callback<String>() {
+                                    @Override
+                                    public void success(String s, Response response) {
+                                        System.out.println("Inside " + s.toString());
+                                        text.setText(s.toString());
+                                    }
+
+                                    @Override
+                                    public void failure(RetrofitError error) {
+
+                                    }
+                                });
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        t.start();
 
         but.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 mTaskService.uploadTask1(edit.getText().toString().trim(), new Callback<String>() {
                     @Override
                     public void success(String s, Response response) {
-
+                        edit.setText(" ");
                     }
 
                     @Override
@@ -64,6 +100,12 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        System.out.println("Inside onResume ");
 
     }
 }
